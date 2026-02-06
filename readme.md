@@ -1,5 +1,7 @@
 # Ansible
 
+default location for ansible is /etc/ansible
+
 
 https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html
 
