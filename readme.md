@@ -18,3 +18,13 @@ Run the playbook using the ansible-playbook command:
 ansible-playbook -i inventory install_nginx.yml
                  <inventoryfile location> <installing playbook>
 ```
+
+
+---
+
+Configuration tools 
+1) chef -- pull based
+2) puppet -- pull based
+3) Saltstack -- push based
+4) ansible -- push based
+
