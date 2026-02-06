@@ -1,0 +1,13 @@
+Ansible to get connected 
+ssh-keygen -t rsa 
+cat id_rsa.pub
+Login to worker node 
+Create .ssh directory 
+Change ownership if needed 
+chmod 600 .ssh
+create authorized_keys files 
+Touch authorized 
+And paste the copied ansible master public key 
+
+====================================================
+
