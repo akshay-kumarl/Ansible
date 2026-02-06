@@ -28,3 +28,8 @@ Configuration tools
 3) Saltstack -- push based
 4) ansible -- push based
 
+---
+![Screenshot 2026-02-06 at 9 41 52 PM](https://github.com/user-attachments/assets/522b0b08-e728-48d3-bf0e-b698f3c149f9)
+
+---
+
