@@ -1,0 +1,360 @@
+ Anisble notes by me
+
+create a inventory.ini (you can write in yaml or .ini or /etc/ansible/hosts)
+
+
+anisble adhoc commands or playbook
+
+
++++++++++++++++++++++++++++++++++++++++++
+Default file location of ansible is /etc/ansible/
+Hosts file need to be config for inventory to use default 
+
+If inventory file is written in this location then 
+ansible all -m ping
+
+If anywhere else then inventory file location need to be mentioned 
+ansible -i location groupname -m ping
+
+
+
+
+=============================
+=============================
++++++++++++++++++++++++++++++
+
+
+
+Static and 
+dynamic inventory needed python to fetch ip address 
+
+
+Modules 
+Ping 
+Default location 
+ansible all -m ping 
+
+Create an inventory at any location with any name 
+ansible -i location groupname -m ping
+ansible -i /root/abc_inventory  abc -m ping 
+
+
+
+
+ansible all -m shell -a “apt update -y”
+
+ansible all -m ping. ===> this is for connectivity of all servers 
+
+ansible worker-02 -m ping  
+
+===========(inventory file)
+[all]
+172.31.16.177           (privateips can be config as it doesnt change )
+172.31.16.192
+[worker-01]
+172.31.16.192
+[worker-02]
+172.31.16.177
+===========
+
+ansible all -m yum -a “name=nginx state=installed”
+
+Inventory file is for config 
+Playbook is for task 
+
+Playbook is written in yaml 
+
+main.yml 
+nginx.yml
+
+
+—-
+- hosts: all
+- tasks: 
+
+ 
+
+
+
+
+
+If u want to connect master and slave u need to have ssh key in slaves 
+Location
+Cd .ssh/
+Vi authorised_keys
+Paste the ssh created here 
+
++++++++++++++++++++++++++++++
+=============================
+=============================
+
+
+
+
+
+
+
+
+
+
+
+
+--- => start of yml playbook not mandatory 
+
+- hosts: all
+  tasks:
+   - name: Install nginx
+     yum: name=nginx state=latest
+  
+---
+
+
+
+
+---
+- hosts: all
+  become: yes		{this line is for giving root permissions}   
+  tasks:
+   - name: install Apache 
+     apt: name=apache2 state=latest
+   - name: copy index.html
+     copy: src=index.html dest=/var/www/html
+   - name: restart apache server 
+     service: name=apache2 state=restarted
+---
+ 
+
+To check syntax for ansible playbook 
+Ansible-playbook apache.yml --syntax-check
+ansible-playbook [name of the playbook] [parameter]
+
+Dry run 
+ansible-playbook apache.yml --check
+
+To run playbook 
+ansible-playbook apache.yml
+ansible-playbook [name of the playbook]
+
+
+
+
+notify,handlers 
+---
+- hosts: all	
+  become: yes
+  tasks:
+   - name: install apache2
+     apt: name=apache2 state=latest 
+   - name: copy index file
+     copy: src=index.html dest=/var/www/html
+     notify: Restart apache2
+ 
+  handlers:
+   - name: Restart apache2
+     service: name=apache2 state=restarted  
+---
+
+
+  
+
+register: to capture the output of the tasks
+debug: to display the output 
+
+
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: install apache
+      apt: name=apache2 state=latest
+      register: apache_install_result # register result of the task
+    
+    - name: Debug apache installation Result 
+      debug:
+        var: apache_install_result   # Print the result captured in the register variable
+
+    - name: copy index.html
+      copy: src=index.html dest=/var/www/html
+      notify: restart apache2
+
+  handlers:
+    - name: Restart apache2
+      service: name=apache2 state=restarted
+      
+---
+
+
+
+
+
+Ansible vault:
+==============
+
+Used to hide sensitive data 
+
+ansible-vault encrypt password 
+
+After encrypting to read 
+ 
+ansible-vault view {filename}
+
+
+ansible-vault edit {filename} 
+
+
+
+ansible-vault rekey {filename}
+
+
+ansible-vault decrypt {filename}
+
+
+
+ansible variables:
+================== 
+Inline 
+vars file
+Command line variables
+prompt for variables: interact with the users to enter the variables 
+Inventory variables
+
+
+Level precedence 
+command line
+vars file
+inline 
+
+
+Inline  example
+---
+- name: variable playbook
+  hosts: all
+  vars:
+    name: Techie
+  
+  tasks:
+    - name: display value
+      debug:
+        var: name
+---
+
+ansible-playbook playbookname.yml
+
+=================================
+Varsfile example
+cat variables.yml 
+---
+name: devops
+---
+
+Playbook file
+
+---
+- name: variable playbook
+  hosts: all
+  vars_files:
+     - variables.yml   {pass the path of the variables file}   
+
+  tasks:
+    - name: Display value
+      debug:
+        var: name
+---
+
+ansible-playbook variable.yml --syntax-check
+
+======================================================
+Command line playbook syntax
+ansible-playbook -e "name=test" {playbookname}
+
+======================================================
+
+
+EXAMPLE for prompt for 
+
+
+
+
+Playbook file
+
+---
+- name: variable playbook
+  hosts: all
+  vars_prompt:
+     - name: variable_name    
+       prompt: "enter a value for variable_name"
+
+
+  tasks:
+    - name: Display value
+      debug:
+        var: variable_name
+---
+
+
+
+
+======================================================
+
+
+By default it will check in inventory file location 
+
+Inventory variables
+
+Inventory file
+
+---
+[all]
+172.31.16.177          name= worker-01
+172.31.16.192          name= worker-02
+[worker-01]
+172.31.16.192
+[worker-02]
+172.31.16.177
+---
+
+
+Playbook file
+
+---
+- name: variable playbook
+  hosts: all
+
+  tasks:
+    - name: Display value
+      debug:
+        var: name
+---
+
+ansible-playbook playbookname.yml
+
+===================================
+
+Playbook to create 5 directory using ansible playbook 
+
+---
+- name: create directory using ansible 
+  host: all
+  
+  tasks:
+    - name: create directory 
+      file:
+        path: /opt/{{item}}
+        state: directory
+        mode: 0755 
+      loop:
+       - directory1
+       - directory2
+       - directory3
+       - directory4
+       - directory5
+
+---
+
+
+
+
+
+
+
++++++++++++++++++++++++++++++++++++++++++
