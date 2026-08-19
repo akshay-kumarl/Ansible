@@ -34,6 +34,7 @@ file
 yum
 service
 
+  
   ansible -i /opt/inventory all -m ping
   ansible -i /opt/inventory all -b -a "touch /opt/madhu"
   ansible -i /opt/inventory all -b -a "mkdir /opt/kiran"
@@ -68,9 +69,9 @@ Ansible modules are small programs that do specific tasks on remote machines —
 3. Modules return structured JSON data — Linux commands just print text
 4. Modules are safer — Linux commands may break the system
 
-
-ansible all  -b -a "useradd mounika1"
-ansible all -m user -b -a "state=present name=mounika2 "
+ansible -i /opt/inventory all -b -a "useradd abcd"
+ansible -i /opt/inventory all -b -a "useradd mindcircuit"
+ansible -i /opt/inventory all -m user -b -a "state=present name=mounika2 "
 
 ansible all -m copy -b -a "src=path/of/file dest=/path"
 
