@@ -1,0 +1,1915 @@
+ANSIBLE:
+
+1. INSTALL ANSIBLE ON CONTROL/ MASTER SERVER
+2. SETUP SSH PASSWORD LESS AUTHENTICATION TO ALL WORKER NODES / CLIENT SERVERS
+
+( WATCH CLASS RECORDING FOR DETAILED EXPLANATION- how to generate sshkeys.. etc  ) 
+
+=============================================================================================
+SETUP ANSIBLE PRATICE FOLDER AND CREATE A Inventory / host file  
+ 
+ 
+cd /opt/
+sudo vim inventory 
+ 
+[appservers]
+172.31.37.67
+#2.3.4.5
+
+[dbservers]
+172.31.35.163
+172.31.19.64
+
+[util]
+#1.2.3.4
+
++===================================================
+AD-HOC COMMANDS: 
+
+WITH LINUX : 
+
+ping
+user 
+file
+yum
+service
+
+  ansible -i /opt/inventory all -m ping
+  ansible -i /opt/inventory all -b -a "touch /opt/madhu"
+  ansible -i /opt/inventory all -b -a "mkdir /opt/kiran"
+  ansible -i /opt/inventory appservers -b -a "mkdir /opt/mc"
+  ansible -i /opt/inventory dbservers -b -a "mkdir /opt/mysqldb"
+  ansible -i /opt/inventory all -b -a "ls -lrth /opt"
+  ansible -i /opt/inventory 172.31.20.99 -b -a "touch /opt/node2"
+  ansible -i /opt/inventory all -b -a "ls -lrth /opt"
+  ansible -i /opt/inventory all -b -a "useradd madhu"
+  ansible -i /opt/inventory all -b -a "tail -3 /etc/passwd"
+  ansible -i /opt/inventory appservers -b -a "useradd mcuser"
+  ansible -i /opt/inventory dbservers -b -a "useradd dbuser"
+  ansible -i /opt/inventory all -b -a "tail -3 /etc/passwd"
+  ansible -i /opt/inventory all -b -a "userdel -r dbuser"
+  ansible -i /opt/inventory all -b -a "rm -rf /opt/madhu"
+  ansible -i /opt/inventory all -b -a "rm  /opt/madhu"
+  ansible -i /opt/inventory all -b -a "touch /opt/madhu"
+  ansible -i /opt/inventory all -b -a "mkdir /opt/madhu"
+  ansible -i /opt/inventory all -b -a "mkdir /opt/bach16"
+  ansible -i /opt/inventory all -b -a "useradd b16user"
+
+==============================================
+AD-HOC COMMANDS: 
+USING MODULES:
+
+jenkins 
+
+Ansible modules are small programs that do specific tasks on remote machines — safely, automatically, and repeatedly without causing errors.
+
+1. Modules are Idempotent — Linux commands are NOT
+2. Modules understand system state — Linux commands don’t - Modules check before doing anything- Linux commands always execute blindly.
+3. Modules return structured JSON data — Linux commands just print text
+4. Modules are safer — Linux commands may break the system
+
+
+ansible all  -b -a "useradd mounika1"
+ansible all -m user -b -a "state=present name=mounika2 "
+
+ansible all -m copy -b -a "src=path/of/file dest=/path"
+
+ansible all -m yum -b -a "name=git"
+ansible all -m yum -b -a "name=git state=preasent"
+
+ansible all -a "yum install git -y" -b
+ansible all -b -a "yum install git -y"
+
+ansible all -m yum -b -a "name=git state=present"
+
+ansible all -m yum -b -a "name=git state=absent"
+
+ansible all -b -a "yum remove git -y"
+
+ansible all -m yum -b -a "name=httpd state=present"
+
+ansible all -m service -b -a "name=httpd state=started"
+
+ansible all -b -a "service httpd start"
+
+ansible devops -b -a "service httpd start"
+ansible all -m service -b -a "name=httpd state=started"
+Ex: reloaded, restarted, started, stopped
+
+
+ansible all -m yum -b -a "name=java state=latest"
+
+ansible all -b -a "useradd user1"
+
+ansible all -m user -b -a "name=alekhya state=present"
+
+ansible devops -b -a "userdel user1"
+
+ansible all -m user -b -a "name=alekhya state=absent"
+
+ansible all -b -a "mkdir /opt/ooooo1"
+
+ansible all -b -a "touch /opt/abc"
+
+/
+ansible all -m file -b -a "path=/opt/k8s state=touch"
+
+ansible all -m file -b -a "path=/opt/456dir state=directory"
+
+
+================================================================================
+
+
+
+DATE: 4 JULY 2026
+
+
+Configuring httpd using ansible adhoc commands:
+
+ansible -i /opt/inventory all -b -m yum -a "name=httpd state=present"
+ansible -i /opt/inventory all -b -m service -a "name=httpd state=started"
+ansible -i /opt/inventory all -b -m copy -a "src= /opt/index.html  dest=/var/www/html/index.html"
+======================
+
+
+PLAYBOOK: 
+An Ansible Playbook is a set of instructions written in YAML that tells Ansible what tasks to run on which servers.
+
+A playbook consists of plays, and a play consists of tasks.
+
+It uses configuration files called Playbooks written in YAML. 
+
+Ansible modules are standalone scripts that can be used inside an Ansible playbook. . 
+
+yaml - one of the data structure format to represent data .
+       yaml file is used to represent data , in our case ansible configuration data
+
+for ex : 
+
+server details :
+
+ser1
+name = prod 
+owner = madhu 
+os    = linux 
+daate = 4/7/2026
+
+
+ser2
+name = lab 
+owner = kiran 
+os    = windows 
+daate = 4/7/2026
+
+---> yaml / xml / json 
+====================================
+server:
+  name: prod
+  owner: madhu
+  os: linux
+  date: "4/7/2026"
+  
+  ==========================
+  
+  
+servers:
+  - id: ser1
+    os: linux
+    date: "4/7/2026"
+	name: prod
+    owner: madhu
+
+  - id: ser2
+    name: lab
+    owner: kiran
+    os: windows
+    date: "4/7/2026"
+	
+======================
+
+
+Diff b/w  XML  VS JSON VS YAML FORMATS :
+
+-----------------------------------
+ways to Representation of Data in YAML :
+
+-------------
+key-value pair 
+
+name = mcserver1
+owner = madhu
+
+name: mcserver1
+owner: madhu
+-------------------
+Array/ List - 
+
+- java 
+- c 
+- go 
+
+Fruits:
+
+- apple
+- grape 
+- banana
+- Orange:   
+   Calories: 50
+   Fat: 0.1 g
+   Carbs: 5g
+
+-------------------
+
+Dictionary - Set of properties , grouped together
+
+Orange:   
+   Calories: 50
+   Carbs: 5g
+   Fat: 0.1 g
+   
+   
+make sure we are giving spaces properly 
+ - equal no of spaces 
+==============================================================
+What is gathering facts?
+
+Automatic collection of system information before running tasks.
+Facts" are pieces of information Ansible collects about the managed host, such as:
+
+OS version
+IP addresses
+Hostname
+CPU, RAM
+Network interfaces
+Python path
+Distribution family (RedHat, Debian, etc.)
+Kernel version
+
+==============================
+ cat /opt/playbooks/httpd_setup.yaml
+
+
+---
+- name: Install and Configure Apache HTTP Server
+  hosts: appservers
+  become: yes
+
+  tasks:
+    - name: Install httpd
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable httpd service  ## systemctl start httpd && systemctl enable httpd 
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Deploy index.html
+      copy:
+        src: /opt/index.html
+        dest: /var/www/html/index.html
+      tags: copy_index
+=================================================================================
+
+--limit 
+
+In Ansible, --limit is a command-line option used with ansible-playbook (and other Ansible commands) to restrict execution to a subset of hosts from your inventory, even if the playbook targets a larger group.
+
+ansible-playbook playbook.yml --limit <host-pattern>
+
+1. Run on a single host
+ansible-playbook site.yml --limit serv1
+ansible-playbook site.yml --limit "srv1,srv2"
+
+
+Why use --limit?
+✅ Test changes on a single server before rolling them out.
+✅ Perform maintenance on specific hosts.
+✅ Retry failed hosts.
+✅ Reduce execution time during debugging.
+
+
+===================================================================
+
+--tags
+
+--tags is an Ansible command-line option that allows you to run only the tasks that have specific tags. It's useful when you don't want to execute an entire playbook.
+
+ansible-playbook playbook.yml --tags <tag_name>
+
+ansible-playbook -i /opt/inventory  httpd_setup.yaml --tags=copy_index
+
+===================================
+--skilp-tags
+
+--skip-tags is an Ansible command-line option that tells Ansible to skip tasks that have the specified tag(s) while running all other tasks.
+
+ansible-playbook playbook.yml --skip-tags <tag_name>
+
+ansible-playbook -i /opt/inventory  httpd_setup.yaml --skip-tags=copy_index
+
+===================
+ HOW TO DO CONF AUTOMATION ON  MASTER SERVER IN ANSBLE  ??
+ 
+ setup ssh pasword less authentication from master - master 
+
+Yes, you can automate configuration on the Ansible control node (master server) itself. There are several ways to do it depending on your setup.
+
+- Add localhost (or the server's hostname/IP) to the inventory:
+
+- Add the public key (~/.ssh/id_rsa.pub ) to the control node's ~/.ssh/authorized_keys:
+
+- Verify passwordless SSH: ---> ssh localhost
+=====================
+
+
+DATE: 6 JULY 2026
+
+---
+- name: Install and Configure Apache HTTP Server
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install httpd
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable httpd service  ## systemctl start httpd && systemctl enable httpd
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Deploy index.html
+      copy:
+        src: /opt/index.html
+        dest: /var/www/html/index.html
+      tags: copy_index
+
+    - name: Service status
+      shell: "systemctl status httpd"
+      tags: copy_index
+      register: status_register
+      tags: status
+
+    - name: Service status op using debug module
+      debug:
+        var: status_register.stdout
+      tags: status
+
+
+
+=======================================
+ANSIBLE HANDLERS 
+
+Ansible handlers are special tasks that run only when notified by another task. They are mainly used to restart, reload, or perform actions only if a change has occurred, making playbooks more efficient.
+
+Why do we need handlers?
+
+Without handlers, a service might restart every time the playbook runs, even when nothing has changed.
+
+cat 2-httpd_handlers.yaml
+
+---
+- name: Install and Configure Apache HTTP Server
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install httpd
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable httpd service  ## systemctl start httpd && systemctl enable httpd 
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Deploy index.html
+      copy:
+        src: /opt/index.html
+        dest: /var/www/html/index.html
+      notify: Restart httpd
+      tags: copy_index
+
+
+    - name: httpd service staus
+      shell: systemctl status httpd
+      register: status_register
+      tags: status
+
+    - name: Disply status of register variable
+      debug: 
+        var: status_register.stdout
+      tags: status
+
+  handlers:
+
+    - name: Restart httpd
+      service:
+        name: httpd
+        state: restarted
+
+
+=================================================================
+
+
+WHY ANSIBLE ROLES ??
+
+Modularization	
+        Breaks down playbooks into smaller, reusable, and independent units of configuration.
+		
+Reusability	
+          Roles can be reused across different playbooks or projects, reducing duplication.
+		  
+Maintainability	
+         Makes it easier to maintain and update configurations by organizing them into distinct sections.
+		 
+Scalability	
+            Helps manage complex systems and scale automation as infrastructure grows.
+Collaboration	
+          Provides a clear structure that improves team collaboration by dividing tasks into specific roles.
+
+==============================================
+
+ROLES:
+
+sudo ansible-galaxy init <rolename>
+
+sudo ansible-galaxy init httpdsetup
+sudo ansible-galaxy init jenkinssetup
+sudo ansible-galaxy init xyz
+sudo ansible-galaxy init git
+
+cat rolespractice/mainplaybook.yaml
+
+
+---
+- hosts: all
+  become: yes
+  roles:
+    - httpdsetup
+    - jenkinssetup
+    - xyz
+    - git
+
+
+===========================
+ANSIBLE ROLES :
+
+your_role_name/
+├── defaults/
+│   └── main.yml          # Default variables (lowest priority)
+├── vars/
+│   └── main.yml          # Variables with higher priority
+├── files/
+│   └── ...               # Static files to copy (e.g., config files, packages)
+├── templates/
+│   └── ...               # Jinja2 templates (e.g., .j2 files)
+├── tasks/
+│   └── main.yml          # Main list of tasks to run
+├── handlers/
+│   └── main.yml          # Handlers triggered by tasks (e.g., service restart)
+├── meta/
+│   └── main.yml          # Role metadata (dependencies, author info)
+├── README.md             # Documentation (optional but recommended)
+└── tests/
+    └── test.yml          # Test playbook to verify role
+==============================================================
+
+
+====================================================================
+ANSIBLE ROLES
+--------------------------------------------------
+WHAT IS AN ANSIBLE ROLE?
+--------------------------------------------------
+
+    Ansible Role is a way to organize
+    playbooks, variables, tasks, files,
+    templates and handlers into a standard
+    directory structure.
+
+    Role helps in:
+
+        • Code Reusability
+        • Easy Maintenance
+        • Better Organization
+
+
+====================================================================
+WHY DO WE NEED ROLES?
+====================================================================
+
+Imagine you want to install Apache (httpd)
+
+Without Roles:
+
+    Everything is written in one playbook.
+
+        • Variables
+        • Tasks
+        • Templates
+        • Handlers
+
+    The playbook becomes very large and difficult to manage.
+
+
+With Roles:
+
+    Everything is divided into folders. Much cleaner and reusable.
+
+
+====================================================================
+WITHOUT ROLES
+====================================================================
+
+install_httpd.yml
+
+--------------------------------
+
+vars
+
+tasks
+
+handlers
+
+templates
+
+files
+
+All written in one file.
+
+--------------------------------
+
+Large playbook ❌ Hard to maintain.
+
+
+====================================================================
+WITH ROLES
+====================================================================
+
+project/
+
+    roles/
+
+        apache/
+
+            tasks/
+
+            handlers/
+
+            templates/
+
+            files/
+
+            vars/
+
+            defaults/
+
+            meta/
+
+            README.md
+
+Very clean ✅
+
+
+====================================================================
+ROLE DIRECTORY STRUCTURE
+====================================================================
+
+project/
+
+    inventory
+
+    playbook.yml
+
+    roles/
+
+        apache/
+
+            tasks/
+                main.yml
+
+            handlers/
+                main.yml
+
+            templates/
+
+            files/
+
+            vars/
+                main.yml
+
+            defaults/
+                main.yml
+
+            meta/
+                main.yml
+
+            README.md
+
+
+====================================================================
+ROLE FOLDERS EXPLAINED
+====================================================================
+
+tasks/
+    Contains all tasks.
+
+Example:
+    Install package
+    Start service
+
+
+--------------------------------
+
+handlers/
+   Contains handlers.
+
+Example:
+    Restart Apache
+    Restart Nginx
+
+
+--------------------------------
+
+templates/
+
+  Stores Jinja2 template files.
+
+Example:
+    index.html.j2
+    nginx.conf.j2
+
+
+--------------------------------
+
+files/ 
+   Stores static files.
+
+Example:
+
+    logo.png
+    index.html
+
+
+--------------------------------
+
+vars/
+
+Stores variables.
+Higher priority variables.
+
+Example:
+    package=httpd
+
+
+--------------------------------
+
+defaults/
+   Stores default variables.
+   Lowest priority.
+   Can be overridden.
+   
+--------------------------------
+
+meta/
+
+Stores role metadata. Dependency information.
+
+
+====================================================================
+MAIN FILES
+====================================================================
+
+Every folder usually contains:
+main.yml
+
+Example:
+
+   tasks/main.yml   
+   handlers/main.yml   
+   vars/main.yml
+
+Ansible automatically loads:
+
+main.yml
+
+
+====================================================================
+CREATING ROLE
+====================================================================
+
+Command
+
+ansible-galaxy init apache
+
+Output
+
+roles/
+
+    apache/
+
+        tasks
+
+        handlers
+
+        templates
+
+        vars
+
+        defaults
+
+        files
+
+        meta
+
+Everything created automatically.
+
+
+
+====================================================================
+REAL DEVOPS PROJECT
+====================================================================
+
+Company has:
+
+10 Applications
+
+Every application needs:
+
+    • Java
+
+    • Tomcat
+
+    • Docker
+
+    • Nginx
+
+Instead of writing
+same tasks repeatedly,
+
+Create roles:
+
+roles/
+
+    java/
+
+    tomcat/
+
+    docker/
+
+    nginx/
+
+Reuse them everywhere.
+
+
+====================================================================
+MULTIPLE ROLES
+====================================================================
+
+playbook.yml
+
+--------------------------------
+
+- hosts: web
+
+  roles:
+
+    - java
+
+    - tomcat
+
+    - nginx
+
+--------------------------------
+
+Execution order:
+
+Java
+
+↓
+
+Tomcat
+
+↓
+
+Nginx
+
+
+
+====================================================================
+ADVANTAGES
+====================================================================
+
+• Reusable
+
+• Organized code
+
+• Easy maintenance
+
+• Modular design
+
+• Easy teamwork
+
+• Production standard
+
+
+
+DATE: 7 JULY 2026
+====================================================================
+ANSIBLE VARIABLES 
+====================================================================
+
+Variables are used to store values that can be reused
+throughout the playbook.
+
+Instead of hardcoding values like:
+
+    httpd
+    nginx
+    ec2-user
+
+We store them in variables.
+
+====================================================================
+WHY DO WE NEED VARIABLES?
+====================================================================
+
+Without Variables:
+
+--------------------------------------------------
+
+- hosts: all
+  become: yes
+
+  tasks:
+
+  - yum:
+      name: httpd
+      state: present
+
+--------------------------------------------------
+
+Tomorrow if package changes to nginx,
+you need to edit the playbook.
+
+===================================================
+
+With Variables:
+
+--------------------------------------------------
+
+
+- hosts: web
+
+  vars:
+    package: httpd
+
+  tasks:
+
+  - yum:
+      name: "{{ package }}"
+      state: present
+
+--------------------------------------------------
+
+Tomorrow:
+
+    package: nginx
+
+No playbook changes required.
+
+====================================================================
+VARIABLE SYNTAX
+====================================================================
+
+    {{ variable_name }}
+
+Example:
+
+    "{{ package }}"
+    "{{ username }}"
+
+====================================================================
+WAYS TO DEFINE VARIABLES
+====================================================================
+
+1. vars
+2. vars_files
+3. Inventory Variables
+4. Group Variables
+5. Host Variables
+6. Extra Variables (-e)
+7. Registered Variables
+
+====================================================================
+1) PLAYBOOK VARIABLES (vars)
+====================================================================
+
+Variables are written directly
+inside the playbook.
+
+Example:
+
+------------------------------------
+
+- hosts: web
+
+  vars:
+
+    package: httpd
+    service: httpd
+
+  tasks:
+
+  - yum:
+      name: "{{ package }}"
+      state: present
+
+  - service:
+      name: "{{ service }}"
+      state: started
+
+------------------------------------
+
+Best For:
+
+    • Small playbooks
+    • Testing
+
+====================================================================
+2) VARIABLE FILE (vars_files)
+====================================================================
+
+Instead of storing variables inside playbook, store them separately.
+
+Project:
+
+project/
+
+    playbook.yml
+    vars.yml
+
+------------------------------------
+
+vars.yml
+
+package: nginx
+service: nginx
+port: 80
+
+------------------------------------
+
+playbook.yml
+
+- hosts: web
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+
+  - yum:
+      name: "{{ package }}"
+      state: present
+
+------------------------------------
+
+Benefits:
+
+    • Cleaner playbook
+    • Easy maintenance
+    • Reusable variables
+
+====================================================================
+3) INVENTORY VARIABLES
+====================================================================
+
+Variables stored in inventory.
+
+inventory.ini
+
+------------------------------------
+
+[web]
+
+server1 ansible_host=10.0.0.10 package=httpd
+
+server2 ansible_host=10.0.0.20 package=nginx
+
+------------------------------------
+
+Playbook:
+
+------------------------------------
+
+- hosts: web
+
+  tasks:
+
+  - debug:
+      msg: "{{ package }}"
+
+---------------- OR  -----------------
+
+- hosts: web
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+
+  - yum:
+      name: "{{ package }}"
+      state: present
+
+------------------------------------
+
+Output:
+
+server1 ---> httpd
+
+server2 ---> nginx
+
+Best For:  Different servers use  different values.
+
+====================================================================
+4) GROUP VARIABLES
+====================================================================
+
+Directory Structure
+
+project/
+
+group_vars/
+
+    web.yml
+    db.yml
+
+inventory.ini
+------------------------------------
+
+[web]
+
+server1
+server2
+
+------------------------------------
+
+group_vars/web.yml
+
+package: httpd
+
+------------------------------------
+group_vars/db.yml
+
+package: mysql
+
+
+Playbook
+
+- hosts: web
+
+  tasks:
+
+  - yum:
+      name: "{{ package }}"
+      state: present
+
+------------------------------------
+
+Every web server installs ---> httpd
+
+Very common in production.
+
+====================================================================
+5) HOST VARIABLES
+====================================================================
+
+Directory
+
+host_vars/
+    server1.yml
+    server2.yml
+
+------------------------------------
+
+host_vars/server1.yml
+
+package: nginx
+
+------------------------------------
+
+host_vars/server2.yml
+
+package: httpd
+
+------------------------------------
+
+Playbook
+
+- hosts: web
+
+  tasks:
+
+  - yum:
+      name: "{{ package }}"
+      state: present
+
+------------------------------------
+
+Result
+
+server1 -- nginx
+
+server2 --  httpd
+
+Best For:
+
+Every server needs its own configuration.
+
+====================================================================
+6) EXTRA VARIABLES (-e)
+====================================================================
+
+Passed while running playbook.
+
+Example
+
+ansible-playbook install.yml -e "package=httpd"
+
+or
+
+ansible-playbook install.yml \
+-e "package=nginx"
+
+Playbook
+
+------------------------------------
+
+- hosts: web
+
+  tasks:
+
+  - yum:
+      name: "{{ package }}"
+      state: present
+
+------------------------------------
+
+No need to edit playbook.
+
+Very useful in:
+
+    Jenkins
+    GitHub Actions
+    Azure DevOps
+
+====================================================================
+REAL-TIME EXAMPLE
+====================================================================
+
+Development
+
+ansible-playbook app.yml \
+-e "env=dev"
+
+Production
+
+ansible-playbook app.yml \
+-e "env=prod"
+
+Same playbook
+Different environment.
+
+====================================================================
+7) REGISTER VARIABLES
+====================================================================
+
+Stores output of a task.
+
+Example
+
+------------------------------------
+
+- command: hostname
+  register: host
+
+------------------------------------
+
+Display output
+
+------------------------------------
+
+- debug:
+    var: host.stdout
+
+------------------------------------
+
+Output--> ip-172-31-10-20
+
+Useful for:
+   hostname
+   uptime
+   disk usage
+   command output (systemctl status httpd) 
+
+====================================================================
+REGISTER EXAMPLE
+====================================================================
+
+- command: df -h /
+  register: disk
+
+- debug:
+    msg: "{{ disk.stdout }}"
+
+====================================================================
+VARIABLE PRECEDENCE
+====================================================================
+
+Lowest Priority
+
+       Playbook vars       
+       ↓       
+       Inventory vars       
+       ↓       
+       Group vars       
+       ↓       
+       Host vars       
+       ↓       
+       Extra vars (-e)
+       
+  Highest Priority
+
+Example
+
+Playbook
+package=httpd
+
+Group vars
+package=apache
+
+Extra vars
+package=nginx
+
+Output:
+nginx
+
+Because Extra vars have highest priority.
+
+====================================================================
+REAL DEVOPS PROJECT
+====================================================================
+
+Inventory
+
+------------------------------------
+
+[web]
+
+web1
+web2
+
+[db]
+
+db1
+
+------------------------------------
+
+group_vars/web.yml
+
+package: nginx
+
+------------------------------------
+
+group_vars/db.yml
+
+package: mysql
+
+------------------------------------
+
+Playbook
+
+- hosts: all
+
+  tasks:
+
+  - yum:
+      name: "{{ package }}"
+      state: present
+
+------------------------------------
+
+Result
+
+Web servers --> Install nginx
+
+Database server--> Install mysql
+
+Single playbook
+Different results
+
+====================================================================
+WHICH VARIABLE TYPE IS USED MOST?
+====================================================================
+
+Small Projects
+    vars
+
+Medium Projects
+
+    vars_files
+
+Production
+
+    group_vars
+    host_vars
+
+CI/CD Pipelines
+
+    extra vars (-e)
+
+Dynamic Information
+    register
+
+====================================================================
+so 
+vars
+    → Inside playbook
+
+vars_files
+    → Separate YAML file
+
+Inventory vars
+    → Inside inventory.ini
+
+group_vars
+    → Common values for a group
+
+host_vars
+    → Values for one server
+
+extra vars (-e)
+    → Passed while executing playbook
+
+register
+    → Store command output
+	
+===========================================================
+
+Template module:
+
+====================================================================
+ANSIBLE TEMPLATE MODULE 
+====================================================================
+
+--------------------------------------------------
+WHAT IS TEMPLATE MODULE?
+--------------------------------------------------
+
+    The template module is used to copy a dynamic file from Ansible Control Node
+    to Managed Nodes.
+
+    It replaces variables inside the file  before copying.
+
+    Template files use:
+
+        .j2 extension
+
+Example:
+
+    httpd.conf.j2
+    index.html.j2
+    nginx.conf.j2
+
+
+====================================================================
+WHY DO WE NEED TEMPLATE MODULE?
+====================================================================
+
+Problem:
+
+Suppose you have 100 servers.
+
+Each server has different:
+
+    • Hostname
+    • IP Address
+    • Environment
+    • Port
+
+Without template:
+
+    Need to manually edit 100 files ❌
+
+With template:
+
+    One template file
+    Variables automatically replaced
+
+Very easy ✅
+====================================================================
+DIRECTORY STRUCTURE
+====================================================================
+
+project/
+
+    playbook.yml
+
+    templates/
+
+        index.html.j2
+
+
+====================================================================
+TEMPLATE FILE
+====================================================================
+
+templates/index.html.j2
+
+------------------------------------
+
+Welcome
+
+Hostname:
+
+{{ inventory_hostname }}
+{{ ansible_hostname }}
+
+Environment:
+
+{{ env }}
+
+------------------------------------
+
+
+====================================================================
+PLAYBOOK
+====================================================================
+
+- hosts: web
+
+  vars:
+
+    env: Production
+
+  tasks:
+
+  - template:
+
+      src: index.html.j2
+
+      dest: /var/www/html/index.html
+
+
+====================================================================
+TEMPLATE VS COPY MODULE
+====================================================================
+
+Copy Module
+
+    Copies file exactly as it is.
+
+    No variable replacement.
+
+
+Example
+
+copy:
+
+    src: file.txt
+
+    dest: /tmp/
+
+
+------------------------------------
+
+Template Module
+
+    Copies file
+
+    Replaces variables first.
+
+
+Example
+
+template:
+
+    src: file.j2
+
+    dest: /tmp/
+
+
+====================================================================
+REAL DEVOPS USE CASES
+====================================================================
+
+Template module is used for:
+
+    • Nginx configuration
+
+    • Apache configuration
+
+    • Tomcat server.xml
+
+    • Application properties
+
+    • index.html
+
+    • Database configuration
+
+    • Environment configuration
+
+
+====================================================================
+WHEN TO USE TEMPLATE?
+====================================================================
+
+Need same file on every server?
+
+Use:    copy
+
+Need different values  for each server?
+
+Use:    template
+
+================================================================
+
+
+
+ANSIBLE VS CHEF VS PUPPET VS SALT 
+
+====================
+
+QIIZ 
+
+
+============================================================
+
+
+DATE: 9 JULY 2026
+====================================================================
+ANSIBLE DYNAMIC INVENTORY – 
+--------------------------------------------------
+WHAT IS DYNAMIC INVENTORY?
+--------------------------------------------------
+
+    Dynamic Inventory allows Ansible to
+    automatically discover hosts at runtime.
+
+    Instead of manually adding servers to
+    inventory.ini, Ansible fetches server
+    information from cloud providers like AWS.
+
+    Inventory is generated dynamically.
+
+
+--------------------------------------------------
+WHY DO WE NEED DYNAMIC INVENTORY?
+--------------------------------------------------
+
+Problem with Static Inventory
+
+    inventory.ini
+
+        Web1
+        Web2
+        DB1
+
+Suppose AWS Auto Scaling launches:
+
+    Web3
+    Web4
+
+Need to manually update inventory.ini ❌
+
+
+Dynamic Inventory
+
+    Automatically detects new EC2 instances.
+
+    No manual updates required. ✅
+
+
+--------------------------------------------------
+REAL DEVOPS USE CASE
+--------------------------------------------------
+
+Company uses Auto Scaling Group.
+
+Morning:
+
+    5 EC2 instances
+
+Evening:
+
+    20 EC2 instances
+
+Midnight:
+
+    3 EC2 instances
+
+Static inventory:
+
+    Must update inventory manually ❌
+
+Dynamic inventory:
+
+    Automatically fetches running EC2 instances ✅
+
+
+--------------------------------------------------
+SUPPORTED SOURCES
+--------------------------------------------------
+
+    AWS EC2
+    Azure VM
+    GCP
+    VMware
+    OpenStack
+    Custom Scripts
+
+
+--------------------------------------------------
+AWS DYNAMIC INVENTORY SETUP
+--------------------------------------------------
+
+Step 1
+
+Install Ansible
+
+    yum install ansible -y
+
+
+--------------------------------------------------
+Step 2
+
+Install AWS Collection
+
+    ansible-galaxy collection install amazon.aws
+
+Provides:
+
+    aws_ec2 inventory plugin
+    ec2 modules
+    security group modules
+
+
+--------------------------------------------------
+Step 3
+
+Install Python Libraries
+
+    sudo yum install python3-boto3 python3-botocore -y
+
+Why?
+
+    boto3 is AWS SDK for Python.
+
+    Ansible uses boto3
+    to communicate with AWS APIs.
+
+
+--------------------------------------------------
+Step 4
+
+Configure AWS Credentials
+
+    aws configure
+
+Provide:
+
+    AWS Access Key
+
+    AWS Secret Key
+
+    Region
+
+Example
+
+    us-east-1
+
+
+--------------------------------------------------
+Step 5
+
+Create Inventory Directory
+
+    mkdir -p /opt/aws_inventory
+
+    cd /opt/aws_inventory
+
+
+--------------------------------------------------
+Step 6
+
+Create Inventory Plugin File
+
+aws_ec2.yml
+
+--------------------------------
+
+plugin: aws_ec2
+
+regions:
+  - us-east-1
+
+filters:
+  instance-state-name: running
+
+hostnames:
+  - private-ip-address
+
+compose:
+  ansible_host: private_ip_address
+
+keyed_groups:
+  - key: tags.Name
+    prefix: ""
+    separator: ""
+
+--------------------------------
+
+
+--------------------------------------------------
+WHAT DOES THIS FILE DO?
+--------------------------------------------------
+
+plugin
+
+    Uses AWS EC2 inventory plugin.
+
+
+regions
+
+    Search EC2 instances
+    in specified region.
+
+
+filters
+
+    Fetch only running instances.
+
+
+hostnames
+
+    Use Private IP
+    as inventory hostname.
+
+
+compose
+
+    Sets ansible_host.
+
+
+keyed_groups
+
+    Creates groups automatically
+    using EC2 Tags.
+
+
+--------------------------------------------------
+EXAMPLE
+--------------------------------------------------
+
+EC2 Tags
+
+Name = WebServer
+
+Name = AppServer
+
+Inventory becomes:
+
+WebServer
+
+    10.0.1.15
+
+AppServer
+
+    10.0.2.25
+
+
+Automatically.
+
+
+--------------------------------------------------
+VERIFY INVENTORY
+--------------------------------------------------
+
+Tree View
+
+ansible-inventory -i /opt/aws_inventory/aws_ec2.yml --graph
+
+
+Detailed JSON
+
+ansible-inventory \
+-i aws_ec2.yml --list
+
+
+--------------------------------------------------
+TEST CONNECTIVITY
+--------------------------------------------------
+ansible all -i /opt/aws_inventory/aws_ec2.yml -u ec2-user --private-key ~/.ssh/mykey.pem -m ping
+
+
+ansible -i /opt/aws_inventory/aws_ec2.yml all -m ping all 
+
+ansible all -i /opt/aws_inventory/aws_ec2.yml -u ec2-user --private-key ~/.ssh/b16ansible.pem -m ping
+
+--------------------------------------------------
+ADVANTAGES
+--------------------------------------------------
+
+• No manual inventory
+
+• Cloud friendly
+
+• Auto Scaling support
+
+• Automatic grouping
+
+• Production ready
+
+====================================================================
+ANSIBLE WHEN CONDITION
+====================================================================
+
+--------------------------------------------------
+WHAT IS WHEN?
+--------------------------------------------------
+
+    when is used to execute a task
+    only if a condition is TRUE.
+
+
+--------------------------------------------------
+SYNTAX
+--------------------------------------------------
+
+- name: Install Apache
+
+  yum:
+
+    name: httpd
+
+    state: present
+
+  when: ansible_os_family == "RedHat"
+
+
+--------------------------------------------------
+REAL-TIME EXAMPLE
+--------------------------------------------------
+
+Company has:
+
+Ubuntu Servers
+
+RHEL Servers
+
+Install Apache only
+on RHEL servers.
+
+Example
+
+--------------------------
+
+- yum:
+
+    name: httpd
+
+    state: present
+
+  when:
+
+    ansible_os_family == "RedHat"
+
+--------------------------
+
+
+Ubuntu servers skip this task.
+
+
+--------------------------------------------------
+MULTIPLE CONDITIONS
+--------------------------------------------------
+
+when:
+
+    ansible_os_family == "RedHat"
+
+    and
+
+    ansible_memtotal_mb > 2048
+
+
+
