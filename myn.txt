@@ -1,0 +1,5 @@
+ssh-keyscan -H 172.31.14.121 >> ~/.ssh/known_hosts
+
+doubts 
+can I connect to the anisble server without connecting manually 
+and how to copy ssh pub to all the hosts
