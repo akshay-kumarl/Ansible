@@ -3,3 +3,15 @@ ssh-keyscan -H 172.31.14.121 >> ~/.ssh/known_hosts
 doubts 
 can I connect to the anisble server without connecting manually 
 and how to copy ssh pub to all the hosts
+
+===================
+172.31.6.90 
+
+172.31.15.135 ansible_user=ec2-user
+
+172.31.14.121 ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/id_ed25519 
+
+localhost
+===================
+save file as 
+inventory.ini
