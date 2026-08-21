@@ -1,0 +1,42 @@
+- name: install and configure nginx server
+  hosts: all
+  become: true  
+
+  tasks:
+   - name: update yum 
+     yum: 
+      name: '*'
+      state: latest
+     when: ansible_os_family == "RedHat" 
+    
+   - name: update apt
+     apt:
+      name: '*'
+      state: latest
+     when: ansible_os_family == "Debian"   
+  
+   - name: install nginx 
+     yum: 
+      name: nginx
+      state: present
+      when: ansible_os_family == "RedHat"
+   
+   - name: install nginx
+     apt:
+      name: nginx
+      state: present
+      when: anisble_os_family == "Debian"   
+  
+   - name: start and enable nginx 
+     service: 
+      name: nginx
+      state: started
+      enabled: true  
+
+   - name: nginx status 
+     shell: systemctl status nginx
+     register: nginx_status
+   
+   - name: display nginx status
+     debug:
+      msg: "Nginx status: {{ nginx_status.stdout }}"   
