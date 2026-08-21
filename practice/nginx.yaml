@@ -11,21 +11,21 @@
     
    - name: update apt
      apt:
-      name: '*'
-      state: latest
+      update_cache: true
+      upgrade: dist
      when: ansible_os_family == "Debian"   
   
-   - name: install nginx 
+   - name: install nginx on amazon linux
      yum: 
       name: nginx
       state: present
-      when: ansible_os_family == "RedHat"
+     when: ansible_os_family == "RedHat"
    
-   - name: install nginx
+   - name: install nginx on ubuntu
      apt:
       name: nginx
       state: present
-      when: anisble_os_family == "Debian"   
+     when: ansible_os_family == "Debian"   
   
    - name: start and enable nginx 
      service: 
@@ -33,7 +33,7 @@
       state: started
       enabled: true  
 
-   - name: nginx status 
+   - name: check nginx status 
      shell: systemctl status nginx
      register: nginx_status
    
